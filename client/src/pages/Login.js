@@ -49,9 +49,6 @@ export default function Login() {
           <button type="submit">Sign In</button>
         </form>
         {err && <div className="login-error">{err}</div>}
-        <div className="login-demo">
-          Demo: <strong>admin / 1234</strong>
-        </div>
       </div>
     </div>
   );

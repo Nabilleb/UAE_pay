@@ -83,16 +83,3 @@
   border-radius: 6px;
   margin-top: 5px;
 }
-
-.login-demo {
-  font-size: 12px;
-  color: #666;
-  text-align: center;
-  margin-top: 20px;
-  padding-top: 15px;
-  border-top: 1px solid #e0e0e0;
-}
-
-.login-demo strong {
-  color: #333;
-}
