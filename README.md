@@ -15,22 +15,25 @@ A full-stack application for managing employees with authentication, built with 
 
 ```
 reactForAbed/
-├── server/
-│   ├── client/                    # React frontend
-│   │   ├── src/
-│   │   │   ├── pages/
-│   │   │   │   ├── Login.js
-│   │   │   │   ├── Login.css
-│   │   │   │   ├── Employees.js
-│   │   │   │   └── Employees.css
-│   │   │   ├── App.js             # Main routing component
-│   │   │   └── index.js
-│   │   ├── public/
-│   │   └── package.json
+├── client/                        # React frontend
+│   ├── src/
+│   │   ├── pages/
+│   │   │   ├── Login.js
+│   │   │   ├── Login.css
+│   │   │   ├── Employees.js
+│   │   │   └── Employees.css
+│   │   ├── App.js                 # Main routing component
+│   │   └── index.js
+│   ├── public/
+│   ├── package.json
+│   └── .gitignore
+│
+├── server/                        # Express backend
+│   ├── server.js                  # Express server entry point
 │   ├── .env                       # Environment variables
 │   ├── .gitignore                 # Git ignore file
-│   ├── server.js                  # Express server entry point
 │   └── package.json
+│
 └── README.md
 ```
 
@@ -46,12 +49,14 @@ reactForAbed/
 
 1. **Clone or navigate to the project:**
    ```bash
-   cd reactForAbed/server
+   cd reactForAbed
    ```
 
 2. **Install backend dependencies:**
    ```bash
+   cd server
    npm install
+   cd ..
    ```
 
 3. **Install frontend dependencies:**
@@ -103,7 +108,7 @@ npm start
 
 **Terminal 2 - Frontend:**
 ```bash
-cd server/client
+cd client
 npm start
 ```
 
@@ -115,11 +120,11 @@ The application will be available at:
 
 Build the React app for production:
 ```bash
-cd server/client
+cd client
 npm run build
 ```
 
-The optimized files will be in the `build/` directory.
+The optimized files will be in the `client/build/` directory.
 
 ## 🔐 Authentication
 
@@ -179,7 +184,7 @@ Response: { "message": "Updated" }
 3. **Run Node.js backend as Windows Service or direct execution**
 
 4. **Ensure backend API URL is accessible from IIS:**
-   - Update `CLIENT_URL` in backend `.env`
+   - Update `CLIENT_URL` in `server/.env`
    - Configure CORS if needed
 
 ### Option 2: Full IIS Integration
