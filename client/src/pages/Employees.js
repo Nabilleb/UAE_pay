@@ -4,7 +4,9 @@ import "./Employees.css";
 
 export default function Employees() {
   const [rows, setRows] = useState([]);
+  const [allRows, setAllRows] = useState([]);
   const [projects, setProjects] = useState([]);
+  const [filterProjectId, setFilterProjectId] = useState("");
   const [msg, setMsg] = useState("");
   const navigate = useNavigate();
 
@@ -25,6 +27,7 @@ export default function Employees() {
     }
 
     const empData = await empRes.json();
+    setAllRows(empData);
     setRows(empData);
 
     // Fetch projects
@@ -42,6 +45,17 @@ export default function Employees() {
     load();
     // eslint-disable-next-line
   }, []);
+
+  function handleProjectFilter(e) {
+    const projId = e.target.value;
+    setFilterProjectId(projId);
+    
+    if (projId === "") {
+      setRows(allRows);
+    } else {
+      setRows(allRows.filter(emp => emp.empProjID === parseInt(projId)));
+    }
+  }
 
   async function update(empPSC, empTagId, empProjID) {
     setMsg("");
@@ -77,6 +91,23 @@ export default function Employees() {
 
       <div className="employees-content">
         {msg && <div className="employees-message">{msg}</div>}
+
+        <div className="filter-section">
+          <label htmlFor="projectFilter">Filter by Project:</label>
+          <select
+            id="projectFilter"
+            value={filterProjectId}
+            onChange={handleProjectFilter}
+            className="project-filter"
+          >
+            <option value="">All Projects</option>
+            {projects.map((p) => (
+              <option key={p.prjSeq} value={p.prjSeq}>
+                {p.prjDesc}
+              </option>
+            ))}
+          </select>
+        </div>
 
         {rows.length === 0 ? (
           <div className="employees-table-wrapper">
