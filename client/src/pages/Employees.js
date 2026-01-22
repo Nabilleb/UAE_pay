@@ -108,8 +108,16 @@ export default function Employees() {
 
     if (res.ok) {
       setMsg(`✓ Updated ${empPSC}`);
+      // Auto-dismiss message after 3 seconds
+      setTimeout(() => {
+        setMsg("");
+      }, 3000);
     } else {
       setMsg("✗ Update failed");
+      // Auto-dismiss error message after 3 seconds
+      setTimeout(() => {
+        setMsg("");
+      }, 3000);
     }
   }
 
