@@ -15,8 +15,6 @@ export default function Employees() {
   const token = localStorage.getItem("token");
 
   async function load() {
-    setMsg("");
-    
     // Fetch employees
     const empRes = await fetch("http://localhost:5000/api/employees", {
       headers: { Authorization: `Bearer ${token}` },
@@ -52,40 +50,38 @@ export default function Employees() {
     // eslint-disable-next-line
   }, []);
 
-  function applyFilters(psc, tagId, projId) {
+  // Reapply filters whenever allRows or filters change
+  useEffect(() => {
     let filtered = allRows;
 
-    if (psc.trim() !== "") {
-      filtered = filtered.filter(emp => emp.empPSC.toLowerCase().includes(psc.toLowerCase()));
+    if (filterPSC.trim() !== "") {
+      filtered = filtered.filter(emp => emp.empPSC.toLowerCase().includes(filterPSC.toLowerCase()));
     }
 
-    if (tagId.trim() !== "") {
-      filtered = filtered.filter(emp => emp.empTagId && emp.empTagId.toLowerCase().includes(tagId.toLowerCase()));
+    if (filterTagId.trim() !== "") {
+      filtered = filtered.filter(emp => emp.empTagId && emp.empTagId.toLowerCase().includes(filterTagId.toLowerCase()));
     }
 
-    if (projId !== "") {
-      filtered = filtered.filter(emp => emp.empProjID === parseInt(projId));
+    if (filterProjectId !== "") {
+      filtered = filtered.filter(emp => emp.empProjID === parseInt(filterProjectId));
     }
 
     setRows(filtered);
-  }
+  }, [allRows, filterPSC, filterTagId, filterProjectId]);
 
   function handleProjectFilter(e) {
     const projId = e.target.value;
     setFilterProjectId(projId);
-    applyFilters(filterPSC, filterTagId, projId);
   }
 
   function handlePSCFilter(e) {
     const psc = e.target.value;
     setFilterPSC(psc);
-    applyFilters(psc, filterTagId, filterProjectId);
   }
 
   function handleTagIdFilter(e) {
     const tagId = e.target.value;
     setFilterTagId(tagId);
-    applyFilters(filterPSC, tagId, filterProjectId);
   }
 
   function handleClearFilters() {
@@ -108,6 +104,7 @@ export default function Employees() {
 
     if (res.ok) {
       setMsg(`✓ Updated ${empPSC}`);
+      load(); // Refresh data to reapply filters
       // Auto-dismiss message after 3 seconds
       setTimeout(() => {
         setMsg("");
@@ -128,6 +125,8 @@ export default function Employees() {
 
   return (
     <div className="employees-container">
+      {msg && <div className="employees-message">{msg}</div>}
+      
       <div className="employees-header">
         <div className="employees-header-content">
           <h2>Employees Management</h2>
@@ -136,8 +135,6 @@ export default function Employees() {
       </div>
 
       <div className="employees-content">
-        {msg && <div className="employees-message">{msg}</div>}
-
         <div className="filter-section">
           <div className="filter-group">
             <label htmlFor="pscFilter">PSC:</label>
