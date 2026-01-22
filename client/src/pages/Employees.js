@@ -35,9 +35,13 @@ export default function Employees() {
       headers: { Authorization: `Bearer ${token}` },
     });
 
+    console.log("Projects Response:", projRes.status);
     if (projRes.ok) {
       const projData = await projRes.json();
+      console.log("Projects Data:", projData);
       setProjects(projData);
+    } else {
+      console.log("Projects fetch failed:", await projRes.text());
     }
   }
 
