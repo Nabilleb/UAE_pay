@@ -80,7 +80,7 @@ app.get("/api/employees", auth, async (req, res) => {
   try {
     const pool = await getPool();
     const result = await pool.request().query(
-      "SELECT empPSC, empTagId FROM dbo.tblEmployee ORDER BY empPSC"
+      "SELECT empPSC, empTagId, empProjID FROM dbo.tblEmployee ORDER BY empPSC"
     );
     res.json(result.recordset);
   } catch (e) {
@@ -88,10 +88,10 @@ app.get("/api/employees", auth, async (req, res) => {
   }
 });
 
-// ✅ Update empTagId
+// ✅ Update empTagId and empProjID
 app.put("/api/employees/:empPSC", auth, async (req, res) => {
   const { empPSC } = req.params;
-  const { empTagId } = req.body;
+  const { empTagId, empProjID } = req.body;
 
   try {
     const pool = await getPool();
@@ -99,9 +99,23 @@ app.put("/api/employees/:empPSC", auth, async (req, res) => {
       .request()
       .input("empPSC", sql.VarChar(50), empPSC)
       .input("empTagId", sql.VarChar(50), empTagId)
-      .query("UPDATE dbo.tblEmployee SET empTagId=@empTagId WHERE empPSC=@empPSC");
+      .input("empProjID", sql.Int, empProjID || null)
+      .query("UPDATE dbo.tblEmployee SET empTagId=@empTagId, empProjID=@empProjID WHERE empPSC=@empPSC");
 
     res.json({ message: "Updated" });
+  } catch (e) {
+    res.status(500).json({ message: "Server error", error: String(e) });
+  }
+});
+
+// ✅ Get projects
+app.get("/api/projects", auth, async (req, res) => {
+  try {
+    const pool = await getPool();
+    const result = await pool.request().query(
+      "SELECT prjSeq, prjDesc FROM dbo.tblProjects ORDER BY prjDesc"
+    );
+    res.json(result.recordset);
   } catch (e) {
     res.status(500).json({ message: "Server error", error: String(e) });
   }
