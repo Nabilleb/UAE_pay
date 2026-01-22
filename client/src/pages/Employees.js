@@ -4,6 +4,7 @@ import "./Employees.css";
 
 export default function Employees() {
   const [rows, setRows] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [msg, setMsg] = useState("");
   const navigate = useNavigate();
 
@@ -11,18 +12,30 @@ export default function Employees() {
 
   async function load() {
     setMsg("");
-    const res = await fetch("http://localhost:5000/api/employees", {
+    
+    // Fetch employees
+    const empRes = await fetch("http://localhost:5000/api/employees", {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    if (res.status === 401) {
+    if (empRes.status === 401) {
       localStorage.removeItem("token");
       navigate("/login");
       return;
     }
 
-    const data = await res.json();
-    setRows(data);
+    const empData = await empRes.json();
+    setRows(empData);
+
+    // Fetch projects
+    const projRes = await fetch("http://localhost:5000/api/projects", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (projRes.ok) {
+      const projData = await projRes.json();
+      setProjects(projData);
+    }
   }
 
   useEffect(() => {
@@ -30,7 +43,7 @@ export default function Employees() {
     // eslint-disable-next-line
   }, []);
 
-  async function update(empPSC, empTagId) {
+  async function update(empPSC, empTagId, empProjID) {
     setMsg("");
     const res = await fetch(`http://localhost:5000/api/employees/${empPSC}`, {
       method: "PUT",
@@ -38,7 +51,7 @@ export default function Employees() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ empTagId }),
+      body: JSON.stringify({ empTagId, empProjID }),
     });
 
     if (res.ok) {
@@ -78,6 +91,7 @@ export default function Employees() {
                 <tr>
                   <th>Employee PSC</th>
                   <th>Tag ID</th>
+                  <th>Project</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -98,7 +112,28 @@ export default function Employees() {
                       />
                     </td>
                     <td>
-                      <button className="save-btn" onClick={() => update(r.empPSC, r.empTagId ?? "")}>
+                      <select
+                        value={r.empProjID ?? ""}
+                        onChange={(e) => {
+                          const v = e.target.value ? parseInt(e.target.value) : null;
+                          setRows((prev) =>
+                            prev.map((x) => (x.empPSC === r.empPSC ? { ...x, empProjID: v } : x))
+                          );
+                        }}
+                      >
+                        <option value="">-- Select Project --</option>
+                        {projects.map((p) => (
+                          <option key={p.prjSeq} value={p.prjSeq}>
+                            {p.prjDesc}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      <button 
+                        className="save-btn" 
+                        onClick={() => update(r.empPSC, r.empTagId ?? "", r.empProjID)}
+                      >
                         Save
                       </button>
                     </td>
