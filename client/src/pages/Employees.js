@@ -7,6 +7,8 @@ export default function Employees() {
   const [allRows, setAllRows] = useState([]);
   const [projects, setProjects] = useState([]);
   const [filterProjectId, setFilterProjectId] = useState("");
+  const [filterPSC, setFilterPSC] = useState("");
+  const [filterTagId, setFilterTagId] = useState("");
   const [msg, setMsg] = useState("");
   const navigate = useNavigate();
 
@@ -50,15 +52,47 @@ export default function Employees() {
     // eslint-disable-next-line
   }, []);
 
+  function applyFilters(psc, tagId, projId) {
+    let filtered = allRows;
+
+    if (psc.trim() !== "") {
+      filtered = filtered.filter(emp => emp.empPSC.toLowerCase().includes(psc.toLowerCase()));
+    }
+
+    if (tagId.trim() !== "") {
+      filtered = filtered.filter(emp => emp.empTagId && emp.empTagId.toLowerCase().includes(tagId.toLowerCase()));
+    }
+
+    if (projId !== "") {
+      filtered = filtered.filter(emp => emp.empProjID === parseInt(projId));
+    }
+
+    setRows(filtered);
+  }
+
   function handleProjectFilter(e) {
     const projId = e.target.value;
     setFilterProjectId(projId);
-    
-    if (projId === "") {
-      setRows(allRows);
-    } else {
-      setRows(allRows.filter(emp => emp.empProjID === parseInt(projId)));
-    }
+    applyFilters(filterPSC, filterTagId, projId);
+  }
+
+  function handlePSCFilter(e) {
+    const psc = e.target.value;
+    setFilterPSC(psc);
+    applyFilters(psc, filterTagId, filterProjectId);
+  }
+
+  function handleTagIdFilter(e) {
+    const tagId = e.target.value;
+    setFilterTagId(tagId);
+    applyFilters(filterPSC, tagId, filterProjectId);
+  }
+
+  function handleClearFilters() {
+    setFilterPSC("");
+    setFilterTagId("");
+    setFilterProjectId("");
+    setRows(allRows);
   }
 
   async function update(empPSC, empTagId, empProjID) {
@@ -97,20 +131,50 @@ export default function Employees() {
         {msg && <div className="employees-message">{msg}</div>}
 
         <div className="filter-section">
-          <label htmlFor="projectFilter">Filter by Project:</label>
-          <select
-            id="projectFilter"
-            value={filterProjectId}
-            onChange={handleProjectFilter}
-            className="project-filter"
-          >
-            <option value="">All Projects</option>
-            {projects.map((p) => (
-              <option key={p.prjSeq} value={p.prjSeq}>
-                {p.prjDesc}
-              </option>
-            ))}
-          </select>
+          <div className="filter-group">
+            <label htmlFor="pscFilter">PSC:</label>
+            <input
+              id="pscFilter"
+              type="text"
+              placeholder="Search by PSC..."
+              value={filterPSC}
+              onChange={handlePSCFilter}
+              className="filter-input"
+            />
+          </div>
+
+          <div className="filter-group">
+            <label htmlFor="tagIdFilter">Tag ID:</label>
+            <input
+              id="tagIdFilter"
+              type="text"
+              placeholder="Search by Tag ID..."
+              value={filterTagId}
+              onChange={handleTagIdFilter}
+              className="filter-input"
+            />
+          </div>
+
+          <div className="filter-group">
+            <label htmlFor="projectFilter">Project:</label>
+            <select
+              id="projectFilter"
+              value={filterProjectId}
+              onChange={handleProjectFilter}
+              className="project-filter"
+            >
+              <option value="">All Projects</option>
+              {projects.map((p) => (
+                <option key={p.prjSeq} value={p.prjSeq}>
+                  {p.prjDesc}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button className="clear-filters-btn" onClick={handleClearFilters}>
+            Clear Filters
+          </button>
         </div>
 
         {rows.length === 0 ? (
