@@ -154,8 +154,20 @@ GET /api/employees
 Authorization: Bearer {token}
 
 Response: [
-  { "empPSC": "EMP001", "empTagId": "TAG001" },
-  { "empPSC": "EMP002", "empTagId": "TAG002" }
+  { "empPSC": "EMP001", "empTagId": "TAG001", "empProjID": 1 },
+  { "empPSC": "EMP002", "empTagId": "TAG002", "empProjID": 2 }
+]
+```
+
+### Get Projects (Protected)
+```
+GET /api/projects
+Authorization: Bearer {token}
+
+Response: [
+  { "prjSeq": 1, "prjDesc": "Project Alpha" },
+  { "prjSeq": 2, "prjDesc": "Project Beta" },
+  { "prjSeq": 3, "prjDesc": "Project Gamma" }
 ]
 ```
 
@@ -165,7 +177,10 @@ PUT /api/employees/{empPSC}
 Authorization: Bearer {token}
 Content-Type: application/json
 
-Body: { "empTagId": "NEW_TAG_ID" }
+Body: { 
+  "empTagId": "NEW_TAG_ID",
+  "empProjID": 2
+}
 Response: { "message": "Updated" }
 ```
 
@@ -214,9 +229,9 @@ Requires:
 
 ## 📝 Database Schema
 
-### Required Tables
+### Database: UAE_PayData
 
-**tblUsers** - User authentication
+#### tblUsers - User Authentication
 ```sql
 CREATE TABLE tblUsers (
   usrID VARCHAR(50) PRIMARY KEY,
@@ -224,12 +239,126 @@ CREATE TABLE tblUsers (
 );
 ```
 
-**tblEmployee** - Employee data
+| Column | Type | Description |
+|--------|------|-------------|
+| usrID | VARCHAR(50) | User login ID (Primary Key) |
+| usrPWD | VARCHAR(50) | User password |
+
+**Sample Data:**
+```sql
+INSERT INTO tblUsers VALUES ('admin', '1234');
+```
+
+---
+
+#### tblEmployee - Employee Information
 ```sql
 CREATE TABLE tblEmployee (
   empPSC VARCHAR(50) PRIMARY KEY,
-  empTagId VARCHAR(50) NULL
+  empTagId VARCHAR(50) NULL,
+  empProjID INT NULL
 );
+```
+
+| Column | Type | Nullable | Description |
+|--------|------|----------|-------------|
+| empPSC | VARCHAR(50) | NO | Employee PSC/ID (Primary Key) |
+| empTagId | VARCHAR(50) | YES | Employee Tag/Category ID |
+| empProjID | INT | YES | Foreign Key to tblProjects (prjSeq) |
+
+**Constraints:**
+- `empPSC` is the primary identifier
+- `empProjID` should reference `tblProjects.prjSeq` (optional)
+
+**Sample Data:**
+```sql
+INSERT INTO tblEmployee VALUES ('EMP001', 'TAG_A', 1);
+INSERT INTO tblEmployee VALUES ('EMP002', 'TAG_B', 2);
+INSERT INTO tblEmployee VALUES ('EMP003', NULL, NULL);
+```
+
+---
+
+#### tblProjects - Project Definitions
+```sql
+CREATE TABLE tblProjects (
+  prjSeq INT PRIMARY KEY IDENTITY(1,1),
+  prjDesc VARCHAR(100) NOT NULL
+);
+```
+
+| Column | Type | Nullable | Description |
+|--------|------|----------|-------------|
+| prjSeq | INT | NO | Project Sequence ID (Primary Key, Auto-increment) |
+| prjDesc | VARCHAR(100) | NO | Project Description/Name |
+
+**Constraints:**
+- `prjSeq` auto-increments starting from 1
+- `prjDesc` cannot be NULL
+
+**Sample Data:**
+```sql
+INSERT INTO tblProjects (prjDesc) VALUES ('Project Alpha');
+INSERT INTO tblProjects (prjDesc) VALUES ('Project Beta');
+INSERT INTO tblProjects (prjDesc) VALUES ('Project Gamma');
+```
+
+---
+
+### Data Relationships
+
+```
+tblProjects (1)
+    ↓
+    └──→ tblEmployee (Many)
+         └── empProjID → prjSeq
+```
+
+**Foreign Key Constraint (Recommended):**
+```sql
+ALTER TABLE tblEmployee
+ADD CONSTRAINT FK_Employee_Project 
+FOREIGN KEY (empProjID) REFERENCES tblProjects(prjSeq);
+```
+
+---
+
+### Database Setup Script
+
+```sql
+-- Create Database
+CREATE DATABASE UAE_PayData;
+USE UAE_PayData;
+
+-- Create Tables
+CREATE TABLE tblUsers (
+  usrID VARCHAR(50) PRIMARY KEY,
+  usrPWD VARCHAR(50)
+);
+
+CREATE TABLE tblProjects (
+  prjSeq INT PRIMARY KEY IDENTITY(1,1),
+  prjDesc VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE tblEmployee (
+  empPSC VARCHAR(50) PRIMARY KEY,
+  empTagId VARCHAR(50) NULL,
+  empProjID INT NULL,
+  CONSTRAINT FK_Employee_Project FOREIGN KEY (empProjID) REFERENCES tblProjects(prjSeq)
+);
+
+-- Insert Sample Data
+INSERT INTO tblUsers VALUES ('admin', '1234');
+
+INSERT INTO tblProjects (prjDesc) VALUES ('Project Alpha');
+INSERT INTO tblProjects (prjDesc) VALUES ('Project Beta');
+INSERT INTO tblProjects (prjDesc) VALUES ('Project Gamma');
+
+INSERT INTO tblEmployee VALUES ('EMP001', 'ADMIN', 1);
+INSERT INTO tblEmployee VALUES ('EMP002', 'USER', 2);
+INSERT INTO tblEmployee VALUES ('EMP003', 'INTERN', NULL);
+INSERT INTO tblEmployee VALUES ('EMP004', 'MANAGER', 1);
 ```
 
 ## 🔒 Security
@@ -288,4 +417,4 @@ Built as a professional full-stack application for interview preparation.
 
 ---
 
-**Last Updated:** January 14, 2026
+**Last Updated:** January 23, 2026
